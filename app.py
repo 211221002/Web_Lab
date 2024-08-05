@@ -154,15 +154,29 @@ def home():
         user_id = ObjectId(session['user']['_id'])
         user_data = users_collection.find_one({'_id': user_id})
 
-        # Fetch projects for the current user
+        # Fetch all projects
         projects_data = list(projects_collection.find(
-            {}, {'_id': 1, 'project_name': 1, 'project_creator': 1, 'project_status': 1, 'email_creator': 1}))
-        notifications = list(
-            notifications_collection.find({'user_id': user_id}))
+            {}, {'_id': 1, 'project_name': 1, 'project_creator': 1, 'status_penelitian': 1, 'email_creator': 1}
+        ))
+
+        # Custom sorting: "dalam perkembangannya" first, then "Selesai"
+        def custom_sort_key(project):
+            status_order = {
+                "dalam perkembangannya": 1,
+                "Selesai": 2
+            }
+            return status_order.get(project.get('status_penelitian', 'Selesai'), 3)
+
+        # Sort projects by custom order
+        projects_data.sort(key=custom_sort_key)
+
+        notifications = list(notifications_collection.find({'user_id': user_id}))
 
         return render_template('home.html', user_data=user_data, projects_data=projects_data, notifications=notifications)
     else:
         return redirect(url_for('login'))
+
+
 
 @app.route('/logout')
 def logout():
@@ -1262,21 +1276,16 @@ def update_project_status(project_id):
         notifications_collection.insert_one(notification)
     return redirect(url_for('index'))
 
-@app.route('/projects/<string:project_id>', methods=['DELETE'])
-def delete_project(project_id):
-    # Convert project_id to ObjectId (assuming ObjectId is used as _id in MongoDB)
-    try:
-        object_id = ObjectId(project_id)
-    except:
-        return jsonify({"error": "Invalid project_id format"}), 400
-
-    # Find and delete the project
-    result = projects_collection.delete_one({"_id": object_id})
+@app.route('/delete_project_by_name/<string:project_name>', methods=['DELETE'])
+def delete_project_by_name(project_name):
+    # Find and delete the project by project_name
+    result = projects_collection.delete_one({"project_name": project_name})
 
     if result.deleted_count == 1:
-        return jsonify({"message": f"Project {project_id} deleted successfully"}), 200
+        return jsonify({"message": f"Project '{project_name}' deleted successfully"}), 200
     else:
         return jsonify({"error": "Project not found"}), 404
+
 
 @app.route('/manage_borrow_requests', methods=['GET', 'POST'])
 def manage_borrow_requests():

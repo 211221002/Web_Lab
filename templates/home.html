@@ -47,6 +47,9 @@
                                         <th scope="col">Nama Penelitian</th>
                                         <th scope="col">Kepala Peneliti</th>
                                         <th scope="col">Status</th>
+                                        {% if user_data.role == "admin" %}
+                                        <th scope="col">Actions</th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                                 <tbody id="projectTableBody">
@@ -55,22 +58,23 @@
                                         data-name="{{ project.project_name }}"
                                         data-creator="{{ project.project_creator }}"
                                         data-description="{{ project.project_description }}"
-                                        data-status="{{ project.project_status }}"
-                                        data-email="{{ project.email_creator}}">
+                                        data-status="{{ project.status_penelitian }}"
+                                        data-email="{{ project.email_creator }}">
                                         <th scope="row">{{ loop.index }}</th>
                                         <td>{{ project.project_name }}</td>
                                         <td>{{ project.project_creator }}</td>
-                                        <td>{{ project.project_status }}</td>
+                                        <td>{{ project.status_penelitian }}</td>
                                         {% if user_data.role == "admin" %}
                                         <td>
                                             <button class="btn btn-danger btn-sm"
-                                                onclick="deleteProject('{{ project.id }}')">Hapus</button>
+                                                onclick="deleteProject('{{ project.project_name }}')">Hapus</button>
                                         </td>
                                         {% endif %}
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
+
                         </div>
                     </div>
                     <nav aria-label="Page navigation example">
@@ -118,47 +122,51 @@
     </div>
 
     <!-- Join Modal -->
-<div class="modal fade" id="joinModal" tabindex="-1" role="dialog" aria-labelledby="joinModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="joinModalLabel">Join a Project: <span id="modalProjectNameDisplay"></span></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                <form id="joinForm" onsubmit="sendJoinRequest(event)">
-                    <div class="form-group">
-                        <label for="namaLengkap">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="namaLengkap" name="namaLengkap" value="{{ user_data['name'] }}" placeholder="{{ user_data['name'] }}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="alamatEmail">Alamat Email</label>
-                        <input type="email" class="form-control" id="alamatEmail" name="alamatEmail" value="{{ user_data['email'] }}" placeholder="{{ user_data['email'] }}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="posisi">Posisi</label>
-                        <select class="form-select" id="posisi" name="posisi" required>
-                            <option value="" disabled selected>Pilih Posisi</option>
-                            <option value="Asisten Peneliti">Asisten Peneliti</option>
-                            <option value="Koordinator Penelitian">Koordinator Penelitian</option>
-                            <option value="Intern Penelitian">Intern Penelitian</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pesanKhusus">Pesan Khusus</label>
-                        <textarea class="form-control" id="pesanKhusus" name="pesanKhusus" rows="3"></textarea>
-                    </div>
-                    <!-- Hidden inputs for project name and creator's email -->
-                    <input type="hidden" id="creatorEmail" name="creatorEmail">
-                    <input type="hidden" id="projectName" name="projectName">
-                    <button type="submit" class="btn btn-primary">Kirim</button>
-                </form>
+    <div class="modal fade" id="joinModal" tabindex="-1" role="dialog" aria-labelledby="joinModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="joinModalLabel">Join a Project: <span
+                            id="modalProjectNameDisplay"></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                    <form id="joinForm" onsubmit="sendJoinRequest(event)">
+                        <div class="form-group">
+                            <label for="namaLengkap">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="namaLengkap" name="namaLengkap"
+                                value="{{ user_data['name'] }}" placeholder="{{ user_data['name'] }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="alamatEmail">Alamat Email</label>
+                            <input type="email" class="form-control" id="alamatEmail" name="alamatEmail"
+                                value="{{ user_data['email'] }}" placeholder="{{ user_data['email'] }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="posisi">Posisi</label>
+                            <select class="form-select" id="posisi" name="posisi" required>
+                                <option value="" disabled selected>Pilih Posisi</option>
+                                <option value="Asisten Peneliti">Asisten Peneliti</option>
+                                <option value="Koordinator Penelitian">Koordinator Penelitian</option>
+                                <option value="Intern Penelitian">Intern Penelitian</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pesanKhusus">Pesan Khusus</label>
+                            <textarea class="form-control" id="pesanKhusus" name="pesanKhusus" rows="3"></textarea>
+                        </div>
+                        <!-- Hidden inputs for project name and creator's email -->
+                        <input type="hidden" id="creatorEmail" name="creatorEmail">
+                        <input type="hidden" id="projectName" name="projectName">
+                        <button type="submit" class="btn btn-primary">Kirim</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
     {% include 'chat.html' %}

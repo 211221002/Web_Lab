@@ -29,8 +29,6 @@ fetch('/data')
         });
     });
 
-
-
 document.addEventListener('DOMContentLoaded', function () {
     var rows = document.querySelectorAll('.clickable-row');
     var finishedProjectsContainer = document.getElementById('finishedProjects');
@@ -53,30 +51,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#projectDetailModal').modal('hide');
                 $('#joinModal').modal('show');
 
-                // Ensure the email and name fields are filled with the current user’s information
                 document.getElementById('creatorEmail').value = email;
                 document.getElementById('modalProjectNameDisplay').innerText = name;
 
-                // No need to clear the fields as they are already populated from the server
-                // document.getElementById('namaLengkap').value = '';
-                // document.getElementById('alamatEmail').value = '';
-                // document.getElementById('posisi').selectedIndex = 0;
-                // document.getElementById('pesanKhusus').value = '';
-                
-                // Set hidden input for project name
                 var hiddenProjectName = document.querySelector('input[name="projectName"]');
                 hiddenProjectName.value = name;
             });
 
-            // Check if the project is finished and move it to the bottom
             if (status === 'selesai') {
                 finishedProjectsContainer.appendChild(this);
             }
         });
     });
 
-
-
+    // Use event delegation to handle delete button clicks
+    tableBody.addEventListener('click', function (event) {
+        if (event.target && event.target.matches('.btn-danger')) {
+            event.stopPropagation(); // Prevent the row click event
+            var projectName = event.target.getAttribute('data-name');
+            deleteProject(projectName);
+        }
+    });
 
     // Pagination setup
     var currentPage = 1;
@@ -101,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var nextPage = document.getElementById('nextPage');
 
         function updatePagination() {
-            // Update page number links
             var pageLinks = pagination.querySelectorAll('.page-number');
             pageLinks.forEach(function (link) {
                 link.parentNode.removeChild(link);
@@ -129,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 pagination.insertBefore(li, nextPage);
             }
 
-            // Update "Previous" and "Next" buttons
             if (currentPage === 1) {
                 prevPage.classList.add('disabled');
             } else {
@@ -168,29 +161,30 @@ document.addEventListener('DOMContentLoaded', function () {
     setupPagination();
 });
 
+
 function sendJoinRequest(event) {
     event.preventDefault();
-    
+
     const form = document.getElementById('joinForm');
     const formData = new FormData(form);
-    
+
     fetch('/send_join_request', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.status === 'success') {
-            window.location.href = document.referrer;
-        }
-    })
-    .catch(error => {
-        alert('An error occurred. Please try again.');
-        console.error('Error:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.status === 'success') {
+                window.location.href = document.referrer;
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error('Error:', error);
+        });
 }
-    
+
 
 
 
@@ -235,22 +229,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function deleteProject(projectId) {
-    // Implement your delete logic here, for example:
+function deleteProject(projectName) {
     if (confirm('Are you sure you want to delete this project?')) {
-        fetch(`/delete_project/${projectId}`, {
+        fetch(`/delete_project_by_name/${encodeURIComponent(projectName)}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
-            },
-            // Add any necessary body parameters if needed
+            }
         }).then(response => {
-            // Handle response as needed
-            console.log('Project deleted successfully');
-            // Optionally, refresh the project list or update UI
+            if (response.ok) {
+                alert('Project deleted successfully');
+                location.reload(); // Reload the page to reflect changes
+            } else {
+                response.json().then(data => {
+                    alert('Error deleting project: ' + data.error);
+                });
+            }
         }).catch(error => {
             console.error('Error deleting project:', error);
-            // Handle errors if any
+            alert('Error deleting project');
         });
     }
 }
+
