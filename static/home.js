@@ -172,19 +172,24 @@ function sendJoinRequest(event) {
         method: 'POST',
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.status === 'success') {
-                window.location.href = document.referrer;
-            }
-        })
-        .catch(error => {
-            alert('An error occurred. Please try again.');
-            console.error('Error:', error);
-        });
-}
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message); // Menampilkan pesan dari server
 
+        if (data.status === 'success') {
+            // Redirect jika permohonan berhasil
+            window.location.href = document.referrer;
+        } else if (data.status === 'error') {
+            // Tampilkan alert jika terjadi error
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        // Tampilkan error jika terjadi kesalahan pada fetch
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+        console.error('Error:', error);
+    });
+}
 
 
 

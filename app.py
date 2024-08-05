@@ -719,6 +719,16 @@ def send_join_request():
     creator_email = request.form.get('creatorEmail')
     project_name = request.form.get('projectName')
 
+    # Check if the user is already a member of the project
+    project = projects_collection.find_one({
+        'project_name': project_name,
+        'member.email': email
+    })
+    
+    if project:
+        return jsonify({'status': 'error', 'message': 'Anda sudah menjadi anggota proyek ini!'})
+
+
     # Generate unique tokens for acceptance and rejection
     accept_token = str(ObjectId())
     reject_token = str(ObjectId())
